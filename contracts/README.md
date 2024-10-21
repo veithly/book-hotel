@@ -1,65 +1,66 @@
-# Smart Contracts for Morph Holesky Starter Kit
+## Foundry
 
-This directory contains the smart contract development environment for the Morph Holesky Starter Kit. It includes both Hardhat and Foundry setups for comprehensive testing and deployment options.
+**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
 
-## Structure
+Foundry consists of:
 
-- `/hardhat`: Hardhat project for Solidity development and testing
-- `/foundry`: Foundry project for additional testing and deployment options
+-   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
+-   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
+-   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
+-   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
 
-## Getting Started with Hardhat
+## Documentation
 
-1. Navigate to the Hardhat directory:
-   ```
-   cd hardhat
-   ```
-2. Install dependencies:
-   ```
-   yarn install
-   ```
-3. Compile contracts:
-   ```
-   yarn hardhat compile
-   ```
-4. Run tests:
-   ```
-   yarn hardhat test
-   ```
-5. Deploy to Morph Holesky:
-   ```
-   yarn hardhat run scripts/deploy.ts --network morphHolesky
-   ```
+https://book.getfoundry.sh/
 
-## Getting Started with Foundry
+## Usage
 
-1. Navigate to the Foundry directory:
-   ```
-   cd foundry
-   ```
-2. Install dependencies:
-   ```
-   forge install
-   ```
-3. Build the project:
-   ```
-   forge build
-   ```
-4. Run tests:
-   ```
-   forge test
-   ```
-5. Deploy to Morph Holesky:
-   ```
-   forge script script/DeployGreeter.s.sol:DeployGreeter --rpc-url $MORPH_HOLESKY_RPC_URL --broadcast
-   ```
+### Build
 
-## Environment Variables
-
-Create a `.env` file in both the Hardhat and Foundry directories with the following variables:
-
-```
-PRIVATE_KEY=your_private_key_here
-MORPH_HOLESKY_RPC_URL=https://rpc-testnet.morphl2.io
+```shell
+$ forge build
 ```
 
-Ensure you never commit your `.env` file to version control.
+### Test
+
+```shell
+$ forge test
+```
+
+### Format
+
+```shell
+$ forge fmt
+```
+
+### Gas Snapshots
+
+```shell
+$ forge snapshot
+```
+
+### Anvil
+
+```shell
+$ anvil
+```
+
+### Deploy
+
+```shell
+$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```
+
+### Cast
+
+```shell
+$ cast <subcommand>
+```
+
+### Help
+
+```shell
+$ forge --help
+$ anvil --help
+$ cast --help
+```

@@ -1,24 +1,54 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import Web3ModalProvider from "../context/Web3Modal";
 import "./globals.css";
+import { Inter as FontSans } from "next/font/google";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+import { cn } from "@/lib/utils";
+import Nav from "@/components/Nav";
+import { Toaster } from "@/components/ui/sonner";
 
-export const metadata: Metadata = {
-  title: "Morph Holesky Starter Kit",
-  description: "A starter kit for building on Morph Holesky",
-};
+import Web3ModalProvider from "@/context/Web3Modal";
+
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  // const initialState = cookieToInitialState(config, headers().get("cookie")) || null;
   return (
-    <html lang="en" className="bg-[#070E1B]">
-      <body className={inter.className}>
-        <Web3ModalProvider>{children}</Web3ModalProvider>
+    <html lang="en">
+      <head>
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <title>Modern Web3 Starter</title>
+        <meta
+          name="description"
+          content="A starter kit for using the latest tools for building your dApps frontends"
+        />
+      </head>
+      <body
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased",
+          fontSans.variable
+        )}
+      >
+        <div id="root" className="p-2">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Web3ModalProvider>
+              <Nav />
+              {children}
+            </Web3ModalProvider>
+          </ThemeProvider>
+        </div>
+        <Toaster richColors />
       </body>
     </html>
   );

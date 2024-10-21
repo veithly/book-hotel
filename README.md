@@ -2,6 +2,13 @@
 
 This project is a comprehensive starter kit for building decentralized applications (dApps) on the Morph Holesky network. It combines smart contract development with Hardhat and Foundry, and a modern frontend using Next.js.
 
+## Added Features
+
+- Only owner can view the owner actions section such as setting availability and adding rooms
+- Set availability for rooms
+- Close the modal after finishing the action
+- Approval token for booking
+
 ## Project Structure
 
 - `/contracts`: Smart contract development environment
