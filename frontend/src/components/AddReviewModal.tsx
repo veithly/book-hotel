@@ -41,9 +41,11 @@ import { MoveLeft } from "lucide-react";
 
 interface InvestModalProps {
   children: React.ReactNode;
+  onSuccess?: () => void;
+  roomId: number;
 }
 
-const AddReviewModal = ({ children }: InvestModalProps) => {
+const AddReviewModal = ({ children, onSuccess, roomId }: InvestModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const {
@@ -58,25 +60,39 @@ const AddReviewModal = ({ children }: InvestModalProps) => {
       hash,
     });
 
-  useEffect(() => {
-    if (isConfirming) {
-      toast.loading("Transaction Pending");
-    }
-    if (isConfirmed) {
-      toast.success("Transaction Successful", {
-        action: {
-          label: "View on Etherscan",
-          onClick: () => {
-            window.open(`https://explorer-testnet.morphl2.io/tx/${hash}`);
+    useEffect(() => {
+      const pendingToastId = isConfirming ? toast.loading("Transaction Pending") : null;
+
+      if (isConfirmed) {
+        if (pendingToastId) {
+          toast.dismiss(pendingToastId);
+        }
+        toast.success("Transaction Successful", {
+          action: {
+            label: "View on Etherscan",
+            onClick: () => {
+              window.open(`https://explorer-testnet.morphl2.io/tx/${hash}`);
+            },
           },
-        },
-      });
-      setIsOpen(false); // 关闭弹窗
-    }
-    if (error) {
-      toast.error("Transaction Failed");
-    }
-  }, [isConfirming, isConfirmed, error, hash]);
+        });
+        setIsOpen(false);
+        onSuccess?.();
+      }
+
+      if (error) {
+        if (pendingToastId) {
+          toast.dismiss(pendingToastId);
+        }
+        toast.error("Transaction Failed");
+      }
+
+      // 清理函数
+      return () => {
+        if (pendingToastId) {
+          toast.dismiss(pendingToastId);
+        }
+      };
+    }, [isConfirming, isConfirmed, error, hash, onSuccess]);
 
   const formSchema = z.object({
     roomId: z.any(),
@@ -87,7 +103,7 @@ const AddReviewModal = ({ children }: InvestModalProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      roomId: 0,
+      roomId: roomId,
       rating: 0,
       comment: "",
     },
@@ -126,27 +142,6 @@ const AddReviewModal = ({ children }: InvestModalProps) => {
         <div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(AddReview)} className="space-y-8">
-              <FormField
-                control={form.control}
-                name="roomId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="">
-                      <h1 className="text-[#32393A]">Room ID)</h1>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        className="rounded-full"
-                        type="number"
-                        placeholder="0"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="rating"

@@ -19,6 +19,7 @@ export default function Home() {
 
   const {
     data: roomData,
+    refetch: refetchRooms
   } = useReadContract({
     abi: bookingAbi,
     address: bookingAddress,
@@ -51,10 +52,10 @@ export default function Home() {
         <section className="py-12 flex items-center justify-between ">
           <h1 className="text-lg font-bold">Owner actions</h1>
           <div className="flex items-center gap-2">
-            <AddRoomModal>
+            <AddRoomModal onSuccess={refetchRooms}>
               <Button>Add room</Button>
             </AddRoomModal>
-            <SetAvailabilityModal>
+            <SetAvailabilityModal onSuccess={refetchRooms}>
               <Button>Set availability</Button>
             </SetAvailabilityModal>
           </div>
@@ -64,7 +65,7 @@ export default function Home() {
       <div>
         {rooms.length > 0 ? (
           rooms?.map((room: any) => (
-            <RoomCard key={room.id} room={room} />
+            <RoomCard key={room.id} room={room} onSuccess={refetchRooms} />
           ))
         ) : (
           <div>

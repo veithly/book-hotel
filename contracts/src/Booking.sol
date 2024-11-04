@@ -30,8 +30,16 @@ contract HotelBooking {
         uint256 checkOutDate;
     }
 
+    struct BookingHistory {
+        address guest;
+        uint256 checkInDate;
+        uint256 checkOutDate;
+        bool hasReviewed;
+    }
+
     mapping(uint256 => Room) public rooms;
     mapping(uint256 => Booking) public roomBookings;
+    mapping(uint256 => BookingHistory[]) public roomBookingHistory;
     uint256 public roomCount;
 
     event RoomAdded(uint256 roomId, string category, uint256 pricePerNight);
@@ -93,11 +101,36 @@ contract HotelBooking {
             checkOutDate: checkOutDate
         });
 
+        roomBookingHistory[roomId].push(BookingHistory({
+            guest: msg.sender,
+            checkInDate: checkInDate,
+            checkOutDate: checkOutDate,
+            hasReviewed: false
+        }));
+
         rooms[roomId].isAvailable = false;
         emit RoomBooked(roomId, msg.sender, checkInDate, checkOutDate);
     }
 
     function addReview(uint256 roomId, uint8 rating, string memory comment) public roomExists(roomId) validRating(rating) {
+        bool isValidGuest = false;
+        uint256 bookingIndex;
+
+        BookingHistory[] storage history = roomBookingHistory[roomId];
+        for (uint256 i = 0; i < history.length; i++) {
+            if (history[i].guest == msg.sender &&
+                !history[i].hasReviewed &&
+                history[i].checkOutDate < block.timestamp) {
+                isValidGuest = true;
+                bookingIndex = i;
+                break;
+            }
+        }
+
+        require(isValidGuest, "Guest has not booked this room or has already reviewed or booking not completed");
+
+        history[bookingIndex].hasReviewed = true;
+
         rooms[roomId].reviews.push(Review({
             guest: msg.sender,
             rating: rating,

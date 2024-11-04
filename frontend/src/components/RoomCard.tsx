@@ -1,4 +1,4 @@
-import { useReadContract, useAccount, useWriteContract } from "wagmi";
+import { useReadContract, useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import {
   bookingAbi,
   bookingAddress,
@@ -12,9 +12,10 @@ import { parseEther } from "viem";
 
 interface RoomCardProps {
   room: any;
+  onSuccess?: () => void;
 }
 
-const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
+const RoomCard: React.FC<RoomCardProps> = ({ room, onSuccess }) => {
   const { address } = useAccount();
   const [isApproved, setIsApproved] = useState(false);
 
@@ -37,11 +38,71 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
     writeContractAsync: bookAsync,
   } = useWriteContract();
 
+  const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: approveHash,
+    });
+
+  const { isLoading: isBookConfirming, isSuccess: isBookConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: bookHash,
+    });
+
   useEffect(() => {
     if (allowance && room.pricePerNight) {
       setIsApproved((allowance as bigint) >= parseEther(room.pricePerNight.toString()));
     }
   }, [allowance, room.pricePerNight]);
+
+  useEffect(() => {
+    const pendingToastId = isApproveConfirming ? toast.loading("Approval Pending") : null;
+
+    if (isApproveConfirmed) {
+      if (pendingToastId) {
+        toast.dismiss(pendingToastId);
+      }
+      toast.success("Approval Successful", {
+        action: {
+          label: "View on Etherscan",
+          onClick: () => {
+            window.open(`https://explorer-testnet.morphl2.io/tx/${approveHash}`);
+          },
+        },
+      });
+      refetchAllowance();
+    }
+
+    return () => {
+      if (pendingToastId) {
+        toast.dismiss(pendingToastId);
+      }
+    };
+  }, [isApproveConfirming, isApproveConfirmed, approveHash, refetchAllowance]);
+
+  useEffect(() => {
+    const pendingToastId = isBookConfirming ? toast.loading("Booking Pending") : null;
+
+    if (isBookConfirmed) {
+      if (pendingToastId) {
+        toast.dismiss(pendingToastId);
+      }
+      toast.success("Booking Successful", {
+        action: {
+          label: "View on Etherscan",
+          onClick: () => {
+            window.open(`https://explorer-testnet.morphl2.io/tx/${bookHash}`);
+          },
+        },
+      });
+      onSuccess?.(); // 刷新房间数据
+    }
+
+    return () => {
+      if (pendingToastId) {
+        toast.dismiss(pendingToastId);
+      }
+    };
+  }, [isBookConfirming, isBookConfirmed, bookHash, onSuccess]);
 
   const handleApprove = async () => {
     try {
@@ -161,7 +222,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
               </>
             )}
 
-            <AddReviewModal>
+            <AddReviewModal onSuccess={onSuccess} roomId={room.id}>
               <button className="bg-gray-600 text-white p-2 mt-2">
                 Add Review
               </button>

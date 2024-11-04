@@ -30,9 +30,10 @@ import { MoveLeft } from "lucide-react";
 
 interface InvestModalProps {
   children: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-const AddRoomModal = ({ children }: InvestModalProps) => {
+const AddRoomModal = ({ children, onSuccess }: InvestModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const {
@@ -47,25 +48,39 @@ const AddRoomModal = ({ children }: InvestModalProps) => {
       hash,
     });
 
-  useEffect(() => {
-    if (isConfirming) {
-      toast.loading("Transaction Pending");
-    }
-    if (isConfirmed) {
-      toast.success("Transaction Successful", {
-        action: {
-          label: "View on Etherscan",
-          onClick: () => {
-            window.open(`https://explorer-testnet.morphl2.io/tx/${hash}`);
+    useEffect(() => {
+      const pendingToastId = isConfirming ? toast.loading("Transaction Pending") : null;
+
+      if (isConfirmed) {
+        if (pendingToastId) {
+          toast.dismiss(pendingToastId);
+        }
+        toast.success("Transaction Successful", {
+          action: {
+            label: "View on Etherscan",
+            onClick: () => {
+              window.open(`https://explorer-testnet.morphl2.io/tx/${hash}`);
+            },
           },
-        },
-      });
-      setIsOpen(false); // 关闭弹窗
-    }
-    if (error) {
-      toast.error("Transaction Failed");
-    }
-  }, [isConfirming, isConfirmed, error, hash]);
+        });
+        setIsOpen(false);
+        onSuccess?.();
+      }
+
+      if (error) {
+        if (pendingToastId) {
+          toast.dismiss(pendingToastId);
+        }
+        toast.error("Transaction Failed");
+      }
+
+      // 清理函数
+      return () => {
+        if (pendingToastId) {
+          toast.dismiss(pendingToastId);
+        }
+      };
+    }, [isConfirming, isConfirmed, error, hash, onSuccess]);
 
   const formSchema = z.object({
     category: z.any(),

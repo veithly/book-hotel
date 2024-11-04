@@ -8,12 +8,12 @@ This project is a comprehensive starter kit for building decentralized applicati
 - Set availability for rooms
 - Close the modal after finishing the action
 - Approval token for booking
+- Only users who have booked can review
+- Close the toast after finishing the action
 
 ## Project Structure
 
-- `/contracts`: Smart contract development environment
-  - `/hardhat`: Hardhat project for Solidity development and testing
-  - `/foundry`: Foundry project for additional testing and deployment options
+- `/contracts`: Smart contract development environment use foundry project for additional testing and deployment options
 - `/frontend`: Next.js project with Web3 integration
 
 ## Getting Started
@@ -21,8 +21,8 @@ This project is a comprehensive starter kit for building decentralized applicati
 1. Clone this repository
 2. Set up the smart contract environment:
    ```
-   cd contracts/hardhat
-   yarn install
+   cd contracts
+   forge install
    ```
 3. Set up the frontend:
    ```

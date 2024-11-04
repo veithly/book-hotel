@@ -30,9 +30,10 @@ import { Switch } from "@/components/ui/switch";
 
 interface SetAvailabilityModalProps {
   children: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-const SetAvailabilityModal = ({ children }: SetAvailabilityModalProps) => {
+const SetAvailabilityModal = ({ children, onSuccess }: SetAvailabilityModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const {
@@ -48,10 +49,12 @@ const SetAvailabilityModal = ({ children }: SetAvailabilityModalProps) => {
     });
 
   useEffect(() => {
-    if (isConfirming) {
-      toast.loading("Transaction Pending");
-    }
+    const pendingToastId = isConfirming ? toast.loading("Transaction Pending") : null;
+
     if (isConfirmed) {
+      if (pendingToastId) {
+        toast.dismiss(pendingToastId);
+      }
       toast.success("Transaction Successful", {
         action: {
           label: "View on Etherscan",
@@ -60,12 +63,24 @@ const SetAvailabilityModal = ({ children }: SetAvailabilityModalProps) => {
           },
         },
       });
-      setIsOpen(false); // 关闭弹窗
+      setIsOpen(false);
+      onSuccess?.();
     }
+
     if (error) {
+      if (pendingToastId) {
+        toast.dismiss(pendingToastId);
+      }
       toast.error("Transaction Failed");
     }
-  }, [isConfirming, isConfirmed, error, hash]);
+
+    // 清理函数
+    return () => {
+      if (pendingToastId) {
+        toast.dismiss(pendingToastId);
+      }
+    };
+  }, [isConfirming, isConfirmed, error, hash, onSuccess]);
 
   const formSchema = z.object({
     roomId: z.number().min(0, "Room ID must be a positive number"),
